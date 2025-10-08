@@ -1,0 +1,135 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Schema\ForeignKeyDefinition;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        $connection = config('posts.database.connection');
+        $tableNames = config("posts.database.tables");
+
+        $postsTable = $tableNames['posts'];
+        $postCommentsTable = $tableNames['post_comments'];
+        $commentsTable = $tableNames['comments'];
+        $categoriesTable = $tableNames['categories'];
+        $authorsTable = $tableNames['authors'];
+        $tagsTable = $tableNames['tags'];
+        $taggablesTable = $tableNames['taggables'];
+
+        Schema::connection($connection)
+            ->create($tagsTable, function (Blueprint $table) {
+                $this->idColumn($table);
+                $table->timestamps();
+                $table->string('name', 255);
+                $table->string('slug', 255)->unique();
+        });
+
+        Schema::create($taggablesTable, function (Blueprint $table) use ($tagsTable) {
+            $this->idColumn($table);
+            $this->foreignIdColumn($table, 'tag_id', $tagsTable)->cascadeOnDelete();
+            $table->morphs('taggable');
+            $table->timestamps();
+
+            $table->unique(['tag_id', 'taggable_id', 'taggable_type']);
+        });
+
+
+        Schema::connection($connection)
+            ->create($authorsTable, function (Blueprint $table) {
+                $this->idColumn($table);
+                $table->string('name', 255);
+                $table->string('slug', 255)->unique();
+                $table->string('email')->nullable();
+                $table->string('profile_picture')->nullable();
+                $table->string('description')->nullable();
+                $table->string('role')->nullable();
+                $table->timestamps();
+        });
+
+        Schema::connection($connection)
+            ->create($categoriesTable, function (Blueprint $table) {
+                $this->idColumn($table);
+                $table->string('name', 255);
+                $table->string('slug', 1024)->unique();
+                $table->json('metadata')->nullable();
+                $table->string('description')->nullable();
+                $table->timestamps();
+        });
+
+        Schema::connection($connection)
+            ->table($categoriesTable, function (Blueprint $table) use ($categoriesTable) {
+                $this->foreignIdColumn($table, 'parent_category_id', $categoriesTable, true)
+                    ->nullOnDelete();
+        });
+
+        Schema::connection($connection)
+            ->create($postsTable, function (Blueprint $table) use ($categoriesTable, $authorsTable) {
+                $this->idColumn($table);
+                $table->string('title', 255);
+                $table->string('slug', 1024)->unique();
+                $table->string('subtitle', 1024)->nullable();;
+                $table->boolean('is_published');
+                $table->json('metadata')->nullable();
+                $table->longText('body')->nullable();
+                $table->string('cover_image')->nullable();
+                $table->string('image_thumbnail')->nullable();
+                $this->foreignIdColumn($table, 'author_id', $authorsTable, true)
+                    ->nullOnDelete();
+                $this->foreignIdColumn($table, 'category_id', $categoriesTable, true)
+                    ->nullOnDelete();
+                $table->timestamps();
+        });
+
+        Schema::connection($connection)
+            ->create($commentsTable, function (Blueprint $table) use ($postsTable) {
+                $this->idColumn($table);
+                $table->integer('stars')->default(0);
+                $table->string('comment', 4000)->nullable();
+                $this->foreignIdColumn($table, 'post_id', $postsTable)
+                    ->nullOnDelete();
+                $table->timestamps();
+        });
+
+        Schema::connection($connection)
+            ->create($postCommentsTable, function (Blueprint $table) use($postsTable, $commentsTable) {
+                $this->idColumn($table);
+                $this->foreignIdColumn($table, 'post_id', $postsTable)
+                    ->cascadeOnDelete();
+                $this->foreignIdColumn($table, 'comment_id', $commentsTable)
+                    ->cascadeOnDelete();
+        });
+
+    }
+
+    /**
+     * @throws \Exception
+     */
+    private function idColumn(Blueprint $table): void
+    {
+        $idType = config('posts.database.id_type', 'bigInteger');
+
+        match ($idType) {
+            'uuid' => $table->uuid()->primary(),
+            'ulid' => $table->ulid()->primary(),
+            'bigInteger' => $table->id(),
+            default => throw new \Exception('Invalid id type. Must be uuid, ulid or bigInteger.'),
+        };
+    }
+
+    private function foreignIdColumn(Blueprint $table, string $column, string $tableName, bool $nullable = false): ForeignKeyDefinition
+    {
+        $idType = config('posts.database.id_type', 'bigInteger');
+
+        return match ($idType) {
+            'uuid' => $table->foreignUuid($column)->nullable($nullable)->constrained($tableName),
+            'ulid' => $table->foreignUlid($column)->nullable($nullable)->constrained($tableName),
+            'bigInteger' => $table->foreignId($column)->nullable($nullable)->constrained($tableName),
+            default => throw new \Exception('Invalid id type. Must be uuid, ulid or bigInteger.'),
+        };
+    }
+
+};
