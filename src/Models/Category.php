@@ -30,7 +30,7 @@ class Category extends Model
         'description',
         'parent_category_id',
         'sort_order',
-        'full_path'
+        'full_path',
     ];
 
     protected function casts(): array

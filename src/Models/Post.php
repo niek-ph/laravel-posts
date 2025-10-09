@@ -77,7 +77,7 @@ class Post extends Model
 
         // Check for uniqueness within the category
         while ($this->slugExistsInCategory($slug)) {
-            $slug = $baseSlug . '-' . $counter;
+            $slug = $baseSlug.'-'.$counter;
             $counter++;
         }
 
@@ -106,7 +106,7 @@ class Post extends Model
     public function updateFullPath(): void
     {
         if ($this->category_id && $this->category) {
-            $this->full_path = $this->category->full_path . '/' . $this->slug;
+            $this->full_path = $this->category->full_path.'/'.$this->slug;
         } else {
             // Posts without category go to root
             $this->full_path = $this->slug;
@@ -127,7 +127,6 @@ class Post extends Model
     {
         return $this->belongsToMany(LaravelPosts::$commentModel, config('posts.database.tables.post_comments'));
     }
-
 
     /**
      * Scope for published posts
