@@ -17,10 +17,10 @@ class PostFactory extends Factory
 
         return [
             'title' => $title,
-            'slug' => $this->faker->unique()->slug(),
+//            'slug' => $this->faker->unique()->slug(),
             'subtitle' => $this->faker->optional()->sentence(),
             'published_at' => $this->faker->optional()->dateTime(),
-            'body' => $this->faker->paragraphs(5, true),
+            'body' => $this->faker->paragraph(5, true),
             'featured_image' => $this->faker->optional()->imageUrl(300, 200, 'business'),
             'seo_title' => $title,
             'seo_description' => $this->faker->paragraphs(5, true),
@@ -42,7 +42,7 @@ class PostFactory extends Factory
     {
         return $this->state(function (array $attributes) {
             return [
-                'published_at' => null,
+                'is_published' => false,
             ];
         });
     }
