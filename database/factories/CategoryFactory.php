@@ -15,7 +15,7 @@ class CategoryFactory extends Factory
 
         return [
             'name' => $name,
-//            'slug' => $this->faker->unique()->slug(),
+            //            'slug' => $this->faker->unique()->slug(),
             'description' => $this->faker->optional()->sentence(),
             'parent_category_id' => null, // Can be overridden in tests
         ];

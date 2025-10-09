@@ -1,6 +1,8 @@
 <?php
 
-use NiekPH\LaravelPosts\Models\{Category, Post, Author};
+use NiekPH\LaravelPosts\Models\Author;
+use NiekPH\LaravelPosts\Models\Category;
+use NiekPH\LaravelPosts\Models\Post;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
@@ -114,7 +116,7 @@ it('maintains path integrity with multiple categories', function () {
                 'title' => "$root Guide",
                 'category_id' => $level4->id,
                 'author_id' => $author->id,
-            ])
+            ]),
         ];
     }
 

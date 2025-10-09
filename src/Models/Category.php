@@ -43,7 +43,6 @@ class Category extends Model
         ];
     }
 
-
     protected static function booted(): void
     {
         static::creating(function (Category $category) {
@@ -86,7 +85,7 @@ class Category extends Model
             $parent = static::find($this->parent_category_id);
 
             if ($parent) {
-                $this->full_path = $parent->full_path . '/' . $this->slug;
+                $this->full_path = $parent->full_path.'/'.$this->slug;
             } else {
                 $this->full_path = $this->slug;
             }
@@ -136,12 +135,12 @@ class Category extends Model
 
         // Check for uniqueness within the same parent
         while ($this->slugExistsInSameParent($slug)) {
-            $slug = $baseSlug . '-' . $counter;
+            $slug = $baseSlug.'-'.$counter;
             $counter++;
 
             // Prevent infinite loops
             if ($counter > 100) {
-                $slug = $baseSlug . '-' . Str::random(4);
+                $slug = $baseSlug.'-'.Str::random(4);
                 break;
             }
         }
@@ -164,8 +163,6 @@ class Category extends Model
 
         return $query->exists();
     }
-
-
 
     public function posts(): HasMany
     {
