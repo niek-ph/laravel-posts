@@ -29,6 +29,8 @@ class Category extends Model
         'metadata',
         'description',
         'parent_category_id',
+        'sort_order',
+        'full_path'
     ];
 
     protected function casts(): array

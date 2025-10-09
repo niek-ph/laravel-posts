@@ -19,10 +19,11 @@ class PostFactory extends Factory
             'title' => $title,
             'slug' => $this->faker->unique()->slug(),
             'subtitle' => $this->faker->optional()->sentence(),
-            'is_published' => $this->faker->boolean(70),
+            'published_at' => $this->faker->optional()->dateTime(),
             'body' => $this->faker->paragraphs(5, true),
-            'cover_image' => $this->faker->optional()->imageUrl(800, 600, 'business'),
-            'image_thumbnail' => $this->faker->optional()->imageUrl(300, 200, 'business'),
+            'featured_image' => $this->faker->optional()->imageUrl(300, 200, 'business'),
+            'seo_title' => $title,
+            'seo_description' => $this->faker->paragraphs(5, true),
             'author_id' => Author::factory(),
             'category_id' => Category::factory(),
         ];
@@ -32,7 +33,7 @@ class PostFactory extends Factory
     {
         return $this->state(function (array $attributes) {
             return [
-                'is_published' => true,
+                'published_at' => now(),
             ];
         });
     }
@@ -41,7 +42,7 @@ class PostFactory extends Factory
     {
         return $this->state(function (array $attributes) {
             return [
-                'is_published' => false,
+                'published_at' => null,
             ];
         });
     }

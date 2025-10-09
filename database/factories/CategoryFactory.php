@@ -16,11 +16,6 @@ class CategoryFactory extends Factory
         return [
             'name' => $name,
             'slug' => $this->faker->unique()->slug(),
-            'metadata' => $this->faker->optional()->randomElement([
-                ['color' => $this->faker->hexColor()],
-                ['icon' => $this->faker->word()],
-                ['priority' => $this->faker->numberBetween(1, 10)],
-            ]),
             'description' => $this->faker->optional()->sentence(),
             'parent_category_id' => null, // Can be overridden in tests
         ];

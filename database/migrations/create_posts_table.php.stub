@@ -54,9 +54,11 @@ return new class extends Migration
             ->create($categoriesTable, function (Blueprint $table) {
                 $this->idColumn($table);
                 $table->string('name', 255);
-                $table->string('slug', 1024)->unique();
+                $table->string('slug', 255)->unique();
+                $table->string('full_path', 2048)->unique();
                 $table->json('metadata')->nullable();
                 $table->string('description')->nullable();
+                $table->integer('sort_order')->nullable();
                 $table->timestamps();
         });
 
@@ -70,17 +72,25 @@ return new class extends Migration
             ->create($postsTable, function (Blueprint $table) use ($categoriesTable, $authorsTable) {
                 $this->idColumn($table);
                 $table->string('title', 255);
-                $table->string('slug', 1024)->unique();
-                $table->string('subtitle', 1024)->nullable();;
-                $table->boolean('is_published');
+                $table->string('slug', 255);
+                $table->string('full_path', 2048)->unique();
+                $table->string('subtitle', 1024)->nullable();
+                $table->integer('sort_order')->nullable();
+                $table->timestamp('published_at')->nullable();
                 $table->json('metadata')->nullable();
                 $table->longText('body')->nullable();
-                $table->string('cover_image')->nullable();
-                $table->string('image_thumbnail')->nullable();
+                $table->string('featured_image')->nullable();
+                $table->string('seo_title')->nullable();
+                $table->text('seo_description')->nullable();
+
                 $this->foreignIdColumn($table, 'author_id', $authorsTable, true)
                     ->nullOnDelete();
                 $this->foreignIdColumn($table, 'category_id', $categoriesTable, true)
                     ->nullOnDelete();
+
+                // Add composite unique constraint: slug must be unique within category
+                $table->unique(['category_id', 'slug'], 'posts_category_slug_unique');
+
                 $table->timestamps();
         });
 
