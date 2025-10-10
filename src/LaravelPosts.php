@@ -80,5 +80,4 @@ class LaravelPosts
     {
         return app(CategoryTreeService::class)->getCategoryTree($category, $includePosts);
     }
-
 }
