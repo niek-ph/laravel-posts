@@ -2,7 +2,7 @@
 
 namespace NiekPH\LaravelPosts;
 
-use NiekPH\LaravelPosts\Commands\LaravelPostsCommand;
+use Spatie\LaravelPackageTools\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -29,8 +29,14 @@ class LaravelPostsServiceProvider extends PackageServiceProvider
         $package
             ->name('laravel-posts')
             ->hasConfigFile()
-            ->hasViews()
             ->hasMigration('create_laravel_posts_table')
-            ->hasCommand(LaravelPostsCommand::class);
+            ->hasInstallCommand(function (InstallCommand $command) {
+                $command
+                    ->publishConfigFile()
+                    ->publishAssets()
+                    ->publishMigrations()
+                    ->askToRunMigrations()
+                    ->askToStarRepoOnGitHub('niek-ph/laravel-posts');
+            });
     }
 }

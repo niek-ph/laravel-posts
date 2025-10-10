@@ -2,21 +2,46 @@
 
 namespace NiekPH\LaravelPosts\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Str;
 use NiekPH\LaravelPosts\Database\Factories\PostFactory;
+use NiekPH\LaravelPosts\Http\Resources\PostResource;
 use NiekPH\LaravelPosts\LaravelPosts;
 
+/**
+ * @property string $title
+ * @property ?string $subtitle
+ * @property string $slug
+ * @property string $full_path
+ * @property int $sort_order
+ * @property string $body
+ * @property ?Carbon $published_at
+ * @property array $metadata
+ * @property ?string $featured_image
+ * @property ?string $seo_title
+ * @property ?string $seo_description
+ * @property ?mixed $author_id
+ * @property ?mixed $category_id
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property-read ?Category $category
+ * @property-read ?Author $author
+ * @property-read HasMany<Comment, Post> $comments
+ *
+ * @mixin Model
+ */
 class Post extends Model
 {
     use HasFactory;
 
     public function getTable(): string
     {
-        return config('posts.database.tables.posts');
+        return config('posts.database.tables.posts', 'posts');
     }
 
     public function getConnectionName()
@@ -105,12 +130,28 @@ class Post extends Model
      */
     public function updateFullPath(): void
     {
-        if ($this->category_id && $this->category) {
+        if (isset($this->category)) {
             $this->full_path = $this->category->full_path.'/'.$this->slug;
         } else {
             // Posts without category go to root
             $this->full_path = $this->slug;
         }
+    }
+
+    public function getNextPost(): ?Post
+    {
+        return Post::where('category_id', $this->category_id)
+            ->where('sort_order', '>', $this->sort_order)
+            ->orderBy('sort_order', 'asc')
+            ->first();
+    }
+
+    public function getPreviousPost(): ?Post
+    {
+        return Post::where('category_id', $this->category_id)
+            ->where('sort_order', '<', $this->sort_order)
+            ->orderBy('sort_order', 'desc')
+            ->first();
     }
 
     public function author(): BelongsTo
@@ -123,9 +164,9 @@ class Post extends Model
         return $this->belongsTo(LaravelPosts::$categoryModel);
     }
 
-    public function comments(): BelongsToMany
+    public function comments(): HasMany
     {
-        return $this->belongsToMany(LaravelPosts::$commentModel, config('posts.database.tables.post_comments'));
+        return $this->hasMany(LaravelPosts::$commentModel);
     }
 
     /**
@@ -139,5 +180,10 @@ class Post extends Model
     protected static function newFactory(): PostFactory
     {
         return PostFactory::new();
+    }
+
+    public function toResource(?string $resourceClass = null): JsonResource
+    {
+        return new PostResource($this);
     }
 }

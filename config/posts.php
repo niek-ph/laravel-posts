@@ -32,7 +32,6 @@ return [
             'categories' => 'categories',
             'comments' => 'comments',
             'posts' => 'posts',
-            'post_comments' => 'post_comments',
             'tags' => 'tags',
             'taggables' => 'taggables',
         ],

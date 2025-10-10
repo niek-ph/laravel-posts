@@ -2,21 +2,45 @@
 
 namespace NiekPH\LaravelPosts\Models;
 
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Str;
 use NiekPH\LaravelPosts\Database\Factories\CategoryFactory;
+use NiekPH\LaravelPosts\Http\Resources\CategoryResource;
 use NiekPH\LaravelPosts\LaravelPosts;
 
+/**
+ * @property string $name
+ * @property string $slug
+ * @property ?array $metadata
+ * @property ?string $description
+ * @property ?mixed $parent_category_id
+ * @property ?int $sort_order
+ * @property string $full_path
+ * @property int $depth
+ * @property ?string $featured_image
+ * @property ?string $seo_title
+ * @property ?string $seo_description
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property HasMany<Post, Category> $posts
+ * @property BelongsTo<Category, Category> $parentCategory
+ * @property HasMany<Category, Category> $childCategories
+ *
+ * @mixin Model
+ */
 class Category extends Model
 {
     use HasFactory;
 
     public function getTable(): string
     {
-        return config('posts.database.tables.categories');
+        return config('posts.database.tables.categories', 'categories');
     }
 
     public function getConnectionName()
@@ -32,6 +56,10 @@ class Category extends Model
         'parent_category_id',
         'sort_order',
         'full_path',
+        'depth',
+        'featured_image',
+        'seo_title',
+        'seo_description',
     ];
 
     protected function casts(): array
@@ -50,11 +78,13 @@ class Category extends Model
                 $category->slug = $category->generateUniqueSlug($category->name);
             }
             $category->updateFullPath();
+            $category->updateDepth();
         });
 
         static::updating(function (Category $category) {
             if ($category->isDirty(['slug', 'parent_category_id'])) {
                 $category->updateFullPath();
+                $category->updateDepth();
             }
         });
 
@@ -95,14 +125,29 @@ class Category extends Model
     }
 
     /**
+     * Update depth level based on parent hierarchy
+     */
+    public function updateDepth(): void
+    {
+        if ($this->parent_category_id) {
+            $parent = $this->parentCategory ?? static::find($this->parent_category_id);
+            $this->depth = $parent ? ($parent->depth + 1) : 0;
+        } else {
+            $this->depth = 0;
+        }
+    }
+
+    /**
      * Update paths for all descendant categories and their posts
      */
     public function updateDescendantPaths(): void
     {
+        /** @var Collection<Category> $children */
         $children = $this->childCategories()->get();
 
         foreach ($children as $child) {
             $child->updateFullPath();
+            $child->updateDepth();
             $child->saveQuietly();
 
             // Recursively update their children
@@ -118,10 +163,13 @@ class Category extends Model
      */
     public function updatePostPaths(): void
     {
-        $this->posts()->get()->each(function ($post) {
+        /** @var Collection<Post> $posts */
+        $posts = $this->posts()->get();
+
+        foreach ($posts as $post) {
             $post->updateFullPath();
             $post->saveQuietly();
-        });
+        }
     }
 
     /**
@@ -182,5 +230,10 @@ class Category extends Model
     protected static function newFactory(): CategoryFactory
     {
         return CategoryFactory::new();
+    }
+
+    public function toResource(?string $resourceClass = null): JsonResource
+    {
+        return new CategoryResource($this);
     }
 }

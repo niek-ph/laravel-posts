@@ -15,18 +15,11 @@ class CategoryFactory extends Factory
 
         return [
             'name' => $name,
-            //            'slug' => $this->faker->unique()->slug(),
             'description' => $this->faker->optional()->sentence(),
             'parent_category_id' => null, // Can be overridden in tests
+            'featured_image' => $this->faker->optional()->imageUrl(300, 200, 'business'),
+            'seo_title' => $name,
+            'seo_description' => $this->faker->paragraphs(5, true),
         ];
-    }
-
-    public function withParent(?Category $parent = null): static
-    {
-        return $this->state(function (array $attributes) use ($parent) {
-            return [
-                'parent_category_id' => $parent?->id ?? Category::factory()->create()->id,
-            ];
-        });
     }
 }

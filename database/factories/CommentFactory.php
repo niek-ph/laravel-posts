@@ -13,17 +13,20 @@ class CommentFactory extends Factory
     public function definition(): array
     {
         return [
-            'stars' => $this->faker->numberBetween(1, 5),
+            'rating' => $this->faker->numberBetween(1, 5),
             'comment' => $this->faker->optional()->paragraph(),
+            'is_approved' => $this->faker->boolean(),
+            'author_name' => $this->faker->optional()->name(),
+            'author_email' => $this->faker->optional()->email(),
             'post_id' => Post::factory(),
         ];
     }
 
-    public function withRating(int $stars): static
+    public function withRating(int $rating): static
     {
-        return $this->state(function (array $attributes) use ($stars) {
+        return $this->state(function (array $attributes) use ($rating) {
             return [
-                'stars' => max(0, min(5, $stars)), // Ensure stars are between 0 and 5
+                'rating' => max(0, min(5, $rating)), // Ensure ratings are between 0 and 5
             ];
         });
     }
