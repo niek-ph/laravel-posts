@@ -8,6 +8,11 @@ use Spatie\LaravelPackageTools\PackageServiceProvider;
 
 class LaravelPostsServiceProvider extends PackageServiceProvider
 {
+    public function registeringPackage(): void
+    {
+       $this->app->singleton(CategoryTreeService::class, fn() => new CategoryTreeService);
+    }
+
     public function bootingPackage(): void
     {
         $models = $this->app['config']->get('posts.models');
@@ -29,7 +34,7 @@ class LaravelPostsServiceProvider extends PackageServiceProvider
         $package
             ->name('laravel-posts')
             ->hasConfigFile()
-            ->hasMigration('create_laravel_posts_table')
+            ->hasMigration('create_posts_table')
             ->hasInstallCommand(function (InstallCommand $command) {
                 $command
                     ->publishConfigFile()

@@ -30,11 +30,12 @@ class PostResource extends JsonResource
             'featured_image' => $this->featured_image,
             'seo_title' => $this->seo_title,
             'seo_description' => $this->seo_description,
-            'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+            'created_at' => $this->created_at,
             'author' => new AuthorResource($this->whenLoaded('author')),
             'category' => new CategoryResource($this->whenLoaded('category')),
             'comments' => CommentResource::collection($this->whenLoaded('comments')),
+            'tags' => TagResource::collection($this->whenLoaded('tags')),
         ];
     }
 }

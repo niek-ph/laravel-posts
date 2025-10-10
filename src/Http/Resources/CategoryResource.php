@@ -29,11 +29,12 @@ class CategoryResource extends JsonResource
             'featured_image' => $this->featured_image,
             'seo_title' => $this->seo_title,
             'seo_description' => $this->seo_description,
-            'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+            'created_at' => $this->created_at,
             'parent_category' => new CategoryResource($this->whenLoaded('parentCategory')),
-            'child_categories' => CategoryResource::collection($this->whenLoaded('childCategories')),
+            'child_categories' => CategoryResource::collection($this->whenLoaded('child_categories')),
             'posts' => PostResource::collection($this->whenLoaded('posts')),
+            'tags' => TagResource::collection($this->whenLoaded('tags')),
         ];
     }
 }

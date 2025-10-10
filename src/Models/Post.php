@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Str;
 use NiekPH\LaravelPosts\Database\Factories\PostFactory;
@@ -167,6 +168,11 @@ class Post extends Model
     public function comments(): HasMany
     {
         return $this->hasMany(LaravelPosts::$commentModel);
+    }
+
+    public function tags(): MorphToMany
+    {
+        return $this->morphToMany(LaravelPosts::$tagModel, 'taggable');
     }
 
     /**

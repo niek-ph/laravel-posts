@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use NiekPH\LaravelPosts\LaravelPosts;
+use NiekPH\LaravelPosts\Facades\LaravelPosts;
 use NiekPH\LaravelPosts\Models\Author;
 use NiekPH\LaravelPosts\Models\Category;
 use NiekPH\LaravelPosts\Models\Post;
@@ -161,8 +161,8 @@ it('builds hierarchical structure correctly', function () {
     $firstCategory = $firstCategory->fresh();
 
     expect($firstCategory->name)->toBe('Technology');
-    expect($firstCategory->childCategories)->toHaveCount(2);
-    expect($firstCategory->childCategories->pluck('name')->toArray())
+    expect($firstCategory->child_categories)->toHaveCount(2);
+    expect($firstCategory->child_categories->pluck('name')->toArray())
         ->toContain('Web Development', 'Mobile Development');
 });
 
@@ -193,8 +193,8 @@ it('returns subtree from specific category', function () {
 
     expect($tree)->toHaveCount(1);
     expect($firstCategory->name)->toBe('Technology');
-    expect($firstCategory->childCategories->first()->name)->toBe('Web Development');
-    expect($firstCategory->childCategories->first()->childCategories->first()->name)->toBe('Frontend');
+    expect($firstCategory->child_categories->first()->name)->toBe('Web Development');
+    expect($firstCategory->child_categories->first()->child_categories->first()->name)->toBe('Frontend');
 });
 
 it('includes posts when requested', function () {
@@ -278,8 +278,8 @@ it('handles posts in nested categories when includePosts is true', function () {
 
     expect($firstCategory->posts)->toHaveCount(1);
     expect($firstCategory->posts->first()->title)->toBe('Parent Post');
-    expect($firstCategory->childCategories->first()->posts)->toHaveCount(1);
-    expect($firstCategory->childCategories->first()->posts->first()->title)->toBe('Child Post');
+    expect($firstCategory->child_categories->first()->posts)->toHaveCount(1);
+    expect($firstCategory->child_categories->first()->posts->first()->title)->toBe('Child Post');
 });
 
 it('works with depth limited subtree from specific category', function () {
@@ -310,6 +310,6 @@ it('works with depth limited subtree from specific category', function () {
     $firstCategory = $firstCategory->fresh();
 
     expect($firstCategory->name)->toBe('Level 1');
-    expect($firstCategory->childCategories)->toHaveCount(1);
-    expect($firstCategory->childCategories->first()->name)->toBe('Level 2');
+    expect($firstCategory->child_categories)->toHaveCount(1);
+    expect($firstCategory->child_categories->first()->name)->toBe('Level 2');
 });

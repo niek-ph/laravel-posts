@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Str;
 use NiekPH\LaravelPosts\Database\Factories\CategoryFactory;
@@ -30,7 +31,7 @@ use NiekPH\LaravelPosts\LaravelPosts;
  * @property Carbon $updated_at
  * @property HasMany<Post, Category> $posts
  * @property BelongsTo<Category, Category> $parentCategory
- * @property HasMany<Category, Category> $childCategories
+ * @property HasMany<Category, Category> $child_categories
  *
  * @mixin Model
  */
@@ -99,7 +100,7 @@ class Category extends Model
 
         static::deleting(function (Category $category) {
             // Prevent deletion if category has children (optional business rule)
-            if ($category->childCategories()->count() > 0) {
+            if ($category->child_categories()->count() > 0) {
                 throw new \Exception('Cannot delete category with subcategories. Move or delete subcategories first.');
             }
         });
@@ -143,7 +144,7 @@ class Category extends Model
     public function updateDescendantPaths(): void
     {
         /** @var Collection<Category> $children */
-        $children = $this->childCategories()->get();
+        $children = $this->child_categories()->get();
 
         foreach ($children as $child) {
             $child->updateFullPath();
@@ -222,9 +223,14 @@ class Category extends Model
         return $this->belongsTo(LaravelPosts::$categoryModel, 'parent_category_id');
     }
 
-    public function childCategories(): HasMany
+    public function child_categories(): HasMany
     {
         return $this->hasMany(LaravelPosts::$categoryModel, 'parent_category_id');
+    }
+
+    public function tags(): MorphToMany
+    {
+        return $this->morphToMany(LaravelPosts::$tagModel, 'taggable');
     }
 
     protected static function newFactory(): CategoryFactory
