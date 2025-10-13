@@ -10,7 +10,7 @@ class LaravelPostsServiceProvider extends PackageServiceProvider
 {
     public function registeringPackage(): void
     {
-       $this->app->singleton(CategoryTreeService::class, fn() => new CategoryTreeService);
+        $this->app->singleton(CategoryTreeService::class, fn () => new CategoryTreeService);
     }
 
     public function bootingPackage(): void

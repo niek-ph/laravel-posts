@@ -26,7 +26,7 @@ class CategoryTreeService
             $rootCategories = collect([$category]);
 
             // Load posts for the starting category if requested
-            if ($includePosts && !$category->relationLoaded('posts')) {
+            if ($includePosts && ! $category->relationLoaded('posts')) {
                 $category->load('posts');
             }
         } else {
@@ -49,7 +49,7 @@ class CategoryTreeService
 
         if ($category) {
             // Get all descendants of the specified category
-            $query->where('full_path', 'like', $category->full_path . '/%')
+            $query->where('full_path', 'like', $category->full_path.'/%')
                 ->orWhere('parent_category_id', $category->id);
         }
         // If no specific category, we'll get all categories later
@@ -63,9 +63,9 @@ class CategoryTreeService
         $categories = $query->orderBy('sort_order')->orderBy('name')->get();
 
         // If no specific category was provided, get all categories
-        if (!$category) {
+        if (! $category) {
             $categories = $categoryModel::query()
-                ->when($includePosts, fn($q) => $q->with('posts'))
+                ->when($includePosts, fn ($q) => $q->with('posts'))
                 ->orderBy('sort_order')
                 ->orderBy('name')
                 ->get();
@@ -94,7 +94,7 @@ class CategoryTreeService
             $parentCategory->setRelation('child_categories', $children);
 
             // If posts weren't eager loaded but we need them, load them now
-            if ($includePosts && !$parentCategory->relationLoaded('posts')) {
+            if ($includePosts && ! $parentCategory->relationLoaded('posts')) {
                 $parentCategory->load('posts');
             }
 
