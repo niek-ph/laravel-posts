@@ -18,7 +18,7 @@ class PostFactory extends Factory
         return [
             'title' => $title,
             //            'slug' => $this->faker->unique()->slug(),
-            'subtitle' => $this->faker->optional()->sentence(),
+            'excerpt' => $this->faker->optional()->sentence(),
             'published_at' => $this->faker->optional()->dateTime(),
             'body' => $this->faker->paragraph(5, true),
             'featured_image' => $this->faker->optional()->imageUrl(300, 200, 'business'),

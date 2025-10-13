@@ -16,7 +16,7 @@ use NiekPH\LaravelPosts\LaravelPosts;
 
 /**
  * @property string $title
- * @property ?string $subtitle
+ * @property ?string $excerpt
  * @property string $slug
  * @property string $full_path
  * @property int $sort_order
@@ -52,7 +52,7 @@ class Post extends Model
 
     protected $fillable = [
         'title',
-        'subtitle',
+        'excerpt',
         'slug',
         'full_path',
         'sort_order',

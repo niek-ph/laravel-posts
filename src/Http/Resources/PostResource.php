@@ -20,7 +20,7 @@ class PostResource extends JsonResource
         return [
             'id' => $this->id,
             'title' => $this->title,
-            'subtitle' => $this->subtitle,
+            'excerpt' => $this->excerpt,
             'slug' => $this->slug,
             'full_path' => $this->full_path,
             'sort_order' => $this->sort_order,

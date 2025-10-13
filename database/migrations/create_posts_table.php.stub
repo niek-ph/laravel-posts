@@ -79,7 +79,7 @@ return new class extends Migration
                 $table->string('title', 255);
                 $table->string('slug', 255);
                 $table->string('full_path', 2048)->unique();
-                $table->string('subtitle', 1024)->nullable();
+                $table->string('excerpt', 2048)->nullable();
                 $table->integer('sort_order')->nullable();
                 $table->timestamp('published_at')->nullable();
                 $table->json('metadata')->nullable();
