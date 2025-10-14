@@ -3,12 +3,14 @@
 namespace NiekPH\LaravelPosts\Models;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use NiekPH\LaravelPosts\Database\Factories\PostFactory;
 use NiekPH\LaravelPosts\Http\Resources\PostResource;
@@ -19,11 +21,13 @@ use NiekPH\LaravelPosts\LaravelPosts;
  * @property ?string $excerpt
  * @property string $slug
  * @property string $full_path
+ * @property string $url
  * @property int $sort_order
  * @property string $body
  * @property ?Carbon $published_at
  * @property array $metadata
  * @property ?string $featured_image
+ * @property ?string $featured_image_url
  * @property ?string $seo_title
  * @property ?string $seo_description
  * @property ?mixed $author_id
@@ -174,6 +178,27 @@ class Post extends Model
     {
         return $this->morphToMany(LaravelPosts::$tagModel, 'taggable');
     }
+
+    /**
+     * Get the full URL for the post
+     */
+    public function url(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => config('app.url') . '/' . $this->full_path,
+        );
+    }
+
+    /**
+     * Get the full URL for the featured image
+     */
+    public function featuredImageUrl(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => isset($this->featured_image) ? Storage::url($this->featured_image) : null,
+        );
+    }
+
 
     /**
      * Scope for published posts
