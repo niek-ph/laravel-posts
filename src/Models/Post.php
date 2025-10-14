@@ -185,7 +185,7 @@ class Post extends Model
     public function url(): Attribute
     {
         return Attribute::make(
-            get: fn() => config('app.url') . '/' . $this->full_path,
+            get: fn () => config('app.url').'/'.$this->full_path,
         );
     }
 
@@ -195,10 +195,9 @@ class Post extends Model
     public function featuredImageUrl(): Attribute
     {
         return Attribute::make(
-            get: fn() => isset($this->featured_image) ? Storage::url($this->featured_image) : null,
+            get: fn () => isset($this->featured_image) ? Storage::url($this->featured_image) : null,
         );
     }
-
 
     /**
      * Scope for published posts
