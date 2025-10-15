@@ -32,7 +32,7 @@ use NiekPH\LaravelPosts\LaravelPosts;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property HasMany<Post, Category> $posts
- * @property BelongsTo<Category, Category> $parentCategory
+ * @property BelongsTo<Category, Category> $parent_category
  * @property HasMany<Category, Category> $child_categories
  *
  * @mixin Model
@@ -133,7 +133,7 @@ class Category extends Model
     public function updateDepth(): void
     {
         if ($this->parent_category_id) {
-            $parent = $this->parentCategory ?? static::find($this->parent_category_id);
+            $parent = $this->parent_category ?? static::find($this->parent_category_id);
             $this->depth = $parent ? ($parent->depth + 1) : 0;
         } else {
             $this->depth = 0;
@@ -220,7 +220,7 @@ class Category extends Model
         return $this->hasMany(LaravelPosts::$postModel);
     }
 
-    public function parentCategory(): BelongsTo
+    public function parent_category(): BelongsTo
     {
         return $this->belongsTo(LaravelPosts::$categoryModel, 'parent_category_id');
     }
