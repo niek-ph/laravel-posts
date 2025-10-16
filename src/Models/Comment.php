@@ -47,6 +47,10 @@ class Comment extends Model
         'post_id',
     ];
 
+    protected $attributes = [
+        'is_approved' => false,
+    ];
+
     protected function casts(): array
     {
         return [

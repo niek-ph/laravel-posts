@@ -217,7 +217,7 @@ class Category extends Model
 
     public function posts(): HasMany
     {
-        return $this->hasMany(LaravelPosts::$postModel);
+        return $this->hasMany(LaravelPosts::$postModel)->orderBy('sort_order', 'asc');
     }
 
     public function parent_category(): BelongsTo
