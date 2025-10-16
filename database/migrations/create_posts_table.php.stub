@@ -115,6 +115,19 @@ return new class extends Migration
         });
     }
 
+    public function down(): void
+    {
+        $connection = config('posts.database.connection');
+        $tableNames = config("posts.database.tables");
+
+        Schema::connection($connection)->dropIfExists($tableNames['comments']);
+        Schema::connection($connection)->dropIfExists($tableNames['posts']);
+        Schema::connection($connection)->dropIfExists($tableNames['categories']);
+        Schema::connection($connection)->dropIfExists($tableNames['authors']);
+        Schema::connection($connection)->dropIfExists($tableNames['taggables']);
+        Schema::connection($connection)->dropIfExists($tableNames['tags']);
+    }
+
     /**
      * @throws \Exception
      */
