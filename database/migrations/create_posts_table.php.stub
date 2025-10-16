@@ -105,7 +105,7 @@ return new class extends Migration
                 $this->foreignIdColumn($table, 'post_id', $postsTable)
                     ->cascadeOnDelete();
 
-                $table->integer('ratings')->default(0);
+                $table->integer('rating')->default(0);
                 $table->string('comment', 4000)->nullable();
                 $table->string('author_name')->nullable();
                 $table->string('author_email')->nullable();
