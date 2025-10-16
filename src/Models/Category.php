@@ -25,6 +25,7 @@ use NiekPH\LaravelPosts\LaravelPosts;
  * @property ?mixed $parent_category_id
  * @property ?int $sort_order
  * @property string $full_path
+ * @property string $url
  * @property int $depth
  * @property ?string $featured_image
  * @property ?string $seo_title
