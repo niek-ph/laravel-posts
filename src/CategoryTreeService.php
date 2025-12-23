@@ -169,7 +169,7 @@ class CategoryTreeService
             }
 
             if ($includePosts) {
-                $children->each(fn(Category $child) => $child->load([
+                $children->each(fn (Category $child) => $child->load([
                     'posts' => function ($query) use ($includeUnpublishedPosts): void {
                         if (! $includeUnpublishedPosts) {
                             $query->whereNotNull('published_at');
@@ -179,7 +179,7 @@ class CategoryTreeService
                         $query->orderBy('published_at')
                             ->orderBy('title');
                     },
-                ]));;
+                ]));
             }
 
             // Set the sorted children on the parent
