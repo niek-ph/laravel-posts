@@ -72,12 +72,6 @@ class CategoryTreeService
 
     /**
      * Get all categories relevant for building the tree.
-     *
-     * @param  string  $categoryModel
-     * @param  Category|null  $category
-     * @param  bool  $includePosts
-     * @param  bool  $includeUnpublishedPosts
-     * @return \Illuminate\Support\Collection
      */
     protected function getAllRelevantCategories(
         string $categoryModel,
@@ -91,7 +85,7 @@ class CategoryTreeService
             // Limit to this category and all of its descendants
             $query->where(function ($q) use ($category) {
                 $q->where('id', $category->id)
-                    ->orWhere('full_path', 'like', $category->full_path . '/%');
+                    ->orWhere('full_path', 'like', $category->full_path.'/%');
             });
         }
 
@@ -113,12 +107,6 @@ class CategoryTreeService
 
     /**
      * Attach child categories to the given parent categories recursively.
-     *
-     * @param  \Illuminate\Support\Collection  $parents
-     * @param  \Illuminate\Support\Collection  $allCategories
-     * @param  bool  $includePosts
-     * @param  bool  $includeUnpublishedPosts
-     * @return void
      */
     protected function attachChildCategories(
         Collection $parents,
