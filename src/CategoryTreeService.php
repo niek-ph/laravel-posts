@@ -12,14 +12,23 @@ class CategoryTreeService
      *
      * @param  Category|null  $category  The parent category to start from (null for root level)
      * @param  bool  $includePosts  Whether to include posts for each category (default: false)
+     * @param  bool  $includeUnpublishedPosts  Whether to include unpublished posts (default: false)
      * @return Collection The hierarchical collection of categories with loaded child relationships
      */
-    public function getCategoryTree(?Category $category = null, bool $includePosts = false): Collection
-    {
+    public function getCategoryTree(
+        ?Category $category = null,
+        bool $includePosts = false,
+        bool $includeUnpublishedPosts = false,
+    ): Collection {
         $categoryModel = LaravelPosts::$categoryModel;
 
         // Get all categories that we need for building the tree
-        $allCategories = $this->getAllRelevantCategories($categoryModel, $category, $includePosts);
+        $allCategories = $this->getAllRelevantCategories(
+            $categoryModel,
+            $category,
+            $includePosts,
+            $includeUnpublishedPosts,
+        );
 
         if ($category) {
             // Start from the specified category
@@ -27,81 +36,120 @@ class CategoryTreeService
 
             // Load posts for the starting category if requested
             if ($includePosts && ! $category->relationLoaded('posts')) {
-                $category->load('posts');
+                $category->load([
+                    'posts' => function ($query) use ($includeUnpublishedPosts) {
+                        if (! $includeUnpublishedPosts) {
+                            $query->whereNotNull('published_at');
+                        }
+                    },
+                ]);
             }
-        } else {
-            // Start from root level categories
-            $rootCategories = $allCategories->whereNull('parent_category_id');
+
+            // Attach child categories recursively
+            $this->attachChildCategories($rootCategories, $allCategories, $includePosts, $includeUnpublishedPosts);
+
+            return $rootCategories;
         }
 
-        // Build the hierarchical structure
-        $this->buildCategoryHierarchy($allCategories, $rootCategories, $includePosts);
+        // Start from root categories (those without a parent)
+        $rootCategories = $allCategories->whereNull('parent_category_id')->values();
 
-        return $rootCategories->values();
+        if ($includePosts) {
+            $rootCategories->load([
+                'posts' => function ($query) use ($includeUnpublishedPosts) {
+                    if (! $includeUnpublishedPosts) {
+                        $query->whereNotNull('published_at');
+                    }
+                },
+            ]);
+        }
+
+        // Attach child categories recursively
+        $this->attachChildCategories($rootCategories, $allCategories, $includePosts, $includeUnpublishedPosts);
+
+        return $rootCategories;
     }
 
     /**
-     * Get all categories needed to build the tree.
+     * Get all categories relevant for building the tree.
+     *
+     * @param  string  $categoryModel
+     * @param  Category|null  $category
+     * @param  bool  $includePosts
+     * @param  bool  $includeUnpublishedPosts
+     * @return \Illuminate\Support\Collection
      */
-    private function getAllRelevantCategories($categoryModel, ?Category $category, bool $includePosts): Collection
-    {
+    protected function getAllRelevantCategories(
+        string $categoryModel,
+        ?Category $category,
+        bool $includePosts,
+        bool $includeUnpublishedPosts,
+    ): Collection {
         $query = $categoryModel::query();
 
         if ($category) {
-            // Get all descendants of the specified category
-            $query->where('full_path', 'like', $category->full_path.'/%')
-                ->orWhere('parent_category_id', $category->id);
+            // Limit to this category and all of its descendants
+            $query->where(function ($q) use ($category) {
+                $q->where('id', $category->id)
+                    ->orWhere('full_path', 'like', $category->full_path . '/%');
+            });
         }
-        // If no specific category, we'll get all categories later
 
-        // Add posts relationship if requested
         if ($includePosts) {
-            $query->with('posts');
+            $query->with([
+                'child_categories',
+                'posts' => function ($postQuery) use ($includeUnpublishedPosts) {
+                    if (! $includeUnpublishedPosts) {
+                        $postQuery->whereNotNull('published_at');
+                    }
+                },
+            ]);
+        } else {
+            $query->with('child_categories');
         }
 
-        // Get categories ordered by sort_order and name
-        $categories = $query->orderBy('sort_order')->orderBy('name')->get();
-
-        // If no specific category was provided, get all categories
-        if (! $category) {
-            $categories = $categoryModel::query()
-                ->when($includePosts, fn ($q) => $q->with('posts'))
-                ->orderBy('sort_order')
-                ->orderBy('name')
-                ->get();
-        }
-
-        return $categories;
+        return $query->get();
     }
 
     /**
-     * Recursively build the category hierarchy by loading child relationships.
+     * Attach child categories to the given parent categories recursively.
      *
-     * @param  Collection  $allCategories  All categories that were fetched
-     * @param  Collection  $parentCategories  Categories at the current level
-     * @param  bool  $includePosts  Whether posts are included in the tree
+     * @param  \Illuminate\Support\Collection  $parents
+     * @param  \Illuminate\Support\Collection  $allCategories
+     * @param  bool  $includePosts
+     * @param  bool  $includeUnpublishedPosts
+     * @return void
      */
-    private function buildCategoryHierarchy(
+    protected function attachChildCategories(
+        Collection $parents,
         Collection $allCategories,
-        Collection $parentCategories,
-        bool $includePosts
+        bool $includePosts,
+        bool $includeUnpublishedPosts,
     ): void {
-        foreach ($parentCategories as $parentCategory) {
-            // Find all direct children of this category
-            $children = $allCategories->where('parent_category_id', $parentCategory->id)->values();
+        $parents->each(function (Category $parent) use (
+            $allCategories,
+            $includePosts,
+            $includeUnpublishedPosts,
+        ) {
+            $children = $allCategories
+                ->where('parent_category_id', $parent->id)
+                ->values();
 
-            // Set the relationship to avoid additional queries
-            $parentCategory->setRelation('child_categories', $children);
-
-            // If posts weren't eager loaded but we need them, load them now
-            if ($includePosts && ! $parentCategory->relationLoaded('posts')) {
-                $parentCategory->load('posts');
+            if ($includePosts && ! $children->isEmpty()) {
+                $children->loadMissing([
+                    'posts' => function ($query) use ($includeUnpublishedPosts) {
+                        if (! $includeUnpublishedPosts) {
+                            $query->whereNotNull('published_at');
+                        }
+                    },
+                ]);
             }
 
-            // Recursively build hierarchy for children if they exist
+            $parent->setRelation('child_categories', $children);
+
             if ($children->isNotEmpty()) {
-                $this->buildCategoryHierarchy($allCategories, $children, $includePosts);
+                $this->attachChildCategories($children, $allCategories, $includePosts, $includeUnpublishedPosts);
             }
-        }
+        });
     }
 }
