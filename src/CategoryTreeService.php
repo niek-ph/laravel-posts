@@ -62,12 +62,13 @@ class CategoryTreeService
         }
 
         // Start from root categories (those without a parent)
+        /** @var Collection<Category> $rootCategories */
         $rootCategories = $allCategories
             ->whereNull('parent_category_id')
             ->values();
 
         if ($includePosts) {
-            $rootCategories->load([
+            $rootCategories->each(fn (Category $category) => $category->load([
                 'posts' => function ($query) use ($includeUnpublishedPosts): void {
                     if (! $includeUnpublishedPosts) {
                         $query->whereNotNull('published_at');
@@ -77,7 +78,7 @@ class CategoryTreeService
                     $query->orderBy('published_at')
                         ->orderBy('title');
                 },
-            ]);
+            ]));
         }
 
         // Attach child categories recursively (children will already be sorted)
@@ -181,7 +182,7 @@ class CategoryTreeService
             }
 
             if ($includePosts) {
-                $children->load([
+                $children->each(fn(Category $child) => $child->load([
                     'posts' => function ($query) use ($includeUnpublishedPosts): void {
                         if (! $includeUnpublishedPosts) {
                             $query->whereNotNull('published_at');
@@ -191,7 +192,7 @@ class CategoryTreeService
                         $query->orderBy('published_at')
                             ->orderBy('title');
                     },
-                ]);
+                ]));;
             }
 
             // Set the sorted children on the parent
