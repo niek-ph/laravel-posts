@@ -234,7 +234,7 @@ it('excludes posts by default', function () {
 
 it('orders categories by sort_order then name', function () {
     Category::factory()->create(['name' => 'Zebra', 'sort_order' => 3]);
-    Category::factory()->create(['name' => 'Apple', 'sort_order' => 1]);
+    Category::factory()->create(['name' => 'Apple', 'sort_order' => 4]);
     Category::factory()->create(['name' => 'Beta', 'sort_order' => 1]);
     Category::factory()->create(['name' => 'Charlie', 'sort_order' => 2]);
 
