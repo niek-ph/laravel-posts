@@ -14,7 +14,6 @@ class CategoryTreeService
      * @param  Category|null  $category  The parent category to start from (null for root level)
      * @param  bool  $includePosts  Whether to include posts for each category (default: false)
      * @param  bool  $includeUnpublishedPosts  Whether to include unpublished posts (default: false)
-     * @return \Illuminate\Support\Collection
      */
     public function getCategoryTree(
         ?Category $category = null,
@@ -96,12 +95,6 @@ class CategoryTreeService
      * Get all categories relevant for building the tree.
      *
      * Categories are always ordered by sort_order first and then by name.
-     *
-     * @param  string  $categoryModel
-     * @param  Category|null  $category
-     * @param  bool  $includePosts
-     * @param  bool  $includeUnpublishedPosts
-     * @return \Illuminate\Support\Collection
      */
     protected function getAllRelevantCategories(
         string $categoryModel,
@@ -115,7 +108,7 @@ class CategoryTreeService
             // Limit to this category and all of its descendants
             $query->where(function (Builder $q) use ($category): void {
                 $q->where('id', $category->id)
-                    ->orWhere('full_path', 'like', $category->full_path . '/%');
+                    ->orWhere('full_path', 'like', $category->full_path.'/%');
             });
         }
 
@@ -147,12 +140,6 @@ class CategoryTreeService
      * Attach child categories to each category in the provided collection, recursively.
      *
      * Child categories are always ordered by sort_order first and then by name.
-     *
-     * @param  \Illuminate\Support\Collection  $parentCategories
-     * @param  \Illuminate\Support\Collection  $allCategories
-     * @param  bool  $includePosts
-     * @param  bool  $includeUnpublishedPosts
-     * @return void
      */
     protected function attachChildCategories(
         Collection $parentCategories,
