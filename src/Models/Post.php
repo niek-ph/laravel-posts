@@ -96,6 +96,16 @@ class Post extends Model
         });
     }
 
+    public function publish(): void
+    {
+        $this->forceFill(['published_at' => now()])->save();
+    }
+
+    public function unpublish(): void
+    {
+        $this->forceFill(['published_at' => null])->save();
+    }
+
     /**
      * Generate a unique slug within the post's category
      */
